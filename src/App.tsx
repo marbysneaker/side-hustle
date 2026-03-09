@@ -13,7 +13,7 @@ import {
   TextField,
   InputAdornment,
   Button,
-  Grid,
+  Box,
   Card,
   CardContent,
 } from '@mui/material';
@@ -123,8 +123,8 @@ function App() {
         Side Hustle Inventory
       </Typography>
 
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={4}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(33.333% - 16px)' } }}>
           <Card elevation={2}>
             <CardContent>
               <Typography variant="body2" color="text.secondary">
@@ -135,8 +135,8 @@ function App() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={4}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(33.333% - 16px)' } }}>
           <Card elevation={2}>
             <CardContent>
               <Typography variant="body2" color="text.secondary">
@@ -147,8 +147,8 @@ function App() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
-        <Grid item xs={12} sm={4}>
+        </Box>
+        <Box sx={{ flex: { xs: '1 1 100%', sm: '1 1 calc(33.333% - 16px)' } }}>
           <Card elevation={2}>
             <CardContent>
               <Typography variant="body2" color="text.secondary">
@@ -162,8 +162,8 @@ function App() {
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
       
       <TableContainer 
         component={Paper} 
