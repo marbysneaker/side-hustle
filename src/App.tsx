@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import {
   Container,
   Typography,
@@ -13,6 +15,10 @@ import {
   TextField,
   InputAdornment,
   Button,
+  Box,
+  Grid,
+  Card,
+  CardContent,
 } from '@mui/material';
 import {
   Checkroom,
@@ -32,7 +38,7 @@ interface InventoryItem {
 }
 
 function App() {
-  const [inventory, setInventory] = useState<InventoryItem[]>([
+  const initialInventory: InventoryItem[] = [
     { id: '1', name: 'Nike SB Janoski Black Size 10', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
     { id: '2', name: 'Nike SB Janoski Black Size 9', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
     { id: '3', name: 'Nike SB Janoski Black Size 10', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
@@ -58,24 +64,41 @@ function App() {
     { id: '23', name: 'Google Home Mini', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
     { id: '24', name: 'Google Home Mini', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
     { id: '25', name: 'Google Home Mini', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
-  ]);
+    { id: '26', name: 'PSU Power Supply', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
+  ];
+
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+
+  const totalPurchase = inventory.reduce((sum, item) => sum + item.purchaseAmount, 0);
+  const totalSold = inventory.reduce((sum, item) => sum + (item.soldAmount || 0), 0);
+  const totalProfit = totalSold - totalPurchase;
+
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'inventory'), (snapshot) => {
+      const items: InventoryItem[] = [];
+      snapshot.forEach((doc) => {
+        items.push({ id: doc.id, ...doc.data() } as InventoryItem);
+      });
+      setInventory(items);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const formatPesos = (amount: number | null) => {
     if (amount === null) return '-';
     return `₱${amount.toLocaleString('en-PH')}`;
   };
 
-  const handleSoldAmountChange = (id: string, value: string) => {
+  const handleSoldAmountChange = async (id: string, value: string) => {
     const numValue = value === '' ? null : parseFloat(value);
-    setInventory(inventory.map(item => 
-      item.id === id ? { ...item, soldAmount: numValue } : item
-    ));
+    const itemRef = doc(db, 'inventory', id);
+    await updateDoc(itemRef, { soldAmount: numValue });
   };
 
-  const markAsSold = (id: string) => {
-    setInventory(inventory.map(item => 
-      item.id === id ? { ...item, isSold: true } : item
-    ));
+  const markAsSold = async (id: string) => {
+    const itemRef = doc(db, 'inventory', id);
+    await updateDoc(itemRef, { isSold: true });
   };
 
   const getTypeIcon = (type: string) => {
@@ -105,6 +128,48 @@ function App() {
       >
         Side Hustle Inventory
       </Typography>
+
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={4}>
+          <Card elevation={2}>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary">
+                Total Spent
+              </Typography>
+              <Typography variant="h5" color="error.main">
+                {formatPesos(totalPurchase)}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Card elevation={2}>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary">
+                Total Sold
+              </Typography>
+              <Typography variant="h5" color="success.main">
+                {formatPesos(totalSold)}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <Card elevation={2}>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary">
+                Profit
+              </Typography>
+              <Typography 
+                variant="h5" 
+                color={totalProfit >= 0 ? 'success.main' : 'error.main'}
+              >
+                {formatPesos(totalProfit)}
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
       
       <TableContainer 
         component={Paper} 
@@ -156,9 +221,11 @@ function App() {
                     onChange={(e) => handleSoldAmountChange(item.id, e.target.value)}
                     placeholder="Not sold"
                     disabled={item.isSold}
-                    InputProps={{
-                      startAdornment: <InputAdornment position="start">₱</InputAdornment>,
-                      sx: { fontSize: { xs: '0.75rem', sm: '0.875rem' } }
+                    slotProps={{
+                      input: {
+                        startAdornment: <InputAdornment position="start">₱</InputAdornment>,
+                        sx: { fontSize: { xs: '0.75rem', sm: '0.875rem' } }
+                      }
                     }}
                     sx={{ width: { xs: 100, sm: 130 } }}
                   />
