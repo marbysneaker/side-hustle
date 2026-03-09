@@ -44,13 +44,22 @@ function App() {
   const totalProfit = totalSold - totalPurchase;
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'inventory'), (snapshot) => {
-      const items: InventoryItem[] = [];
-      snapshot.forEach((doc) => {
-        items.push({ id: doc.id, ...doc.data() } as InventoryItem);
-      });
-      setInventory(items.sort((a, b) => parseInt(a.id) - parseInt(b.id)));
-    });
+    console.log('Setting up Firebase listener...');
+    const unsubscribe = onSnapshot(
+      collection(db, 'inventory'), 
+      (snapshot) => {
+        console.log('Firebase snapshot received, document count:', snapshot.size);
+        const items: InventoryItem[] = [];
+        snapshot.forEach((doc) => {
+          items.push({ id: doc.id, ...doc.data() } as InventoryItem);
+        });
+        console.log('Loaded items:', items.length);
+        setInventory(items.sort((a, b) => parseInt(a.id) - parseInt(b.id)));
+      },
+      (error) => {
+        console.error('Firebase error:', error);
+      }
+    );
 
     return () => unsubscribe();
   }, []);
