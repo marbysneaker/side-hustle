@@ -91,25 +91,39 @@ function App() {
       case 'electronics':
         return <Devices sx={{ fontSize: 18 }} />;
       default:
-        return null;
+        return <ShoppingBag sx={{ fontSize: 18 }} />;
     }
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 3 }}>
+    <Container maxWidth="lg" sx={{ py: 2, px: { xs: 1, sm: 2 } }}>
+      <Typography 
+        variant="h4" 
+        component="h1" 
+        gutterBottom 
+        sx={{ mb: 2, fontSize: { xs: '1.5rem', sm: '2rem' } }}
+      >
         Side Hustle Inventory
       </Typography>
       
-      <TableContainer component={Paper} elevation={2}>
-        <Table>
+      <TableContainer 
+        component={Paper} 
+        elevation={2}
+        sx={{ 
+          overflowX: 'auto',
+          '& .MuiTable-root': {
+            minWidth: { xs: 600, sm: 750 }
+          }
+        }}
+      >
+        <Table size="small">
           <TableHead>
             <TableRow sx={{ bgcolor: 'primary.main' }}>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Type</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Purchase Amount</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="right">Sold Amount (₱)</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }} align="center">Status</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Name</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>Type</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }} align="right">Purchase</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }} align="right">Sold (₱)</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', fontSize: { xs: '0.75rem', sm: '0.875rem' } }} align="center">Status</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -122,7 +136,7 @@ function App() {
                   opacity: item.isSold ? 0.7 : 1 
                 }}
               >
-                <TableCell>{item.name}</TableCell>
+                <TableCell sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>{item.name}</TableCell>
                 <TableCell>
                   <Chip
                     icon={getTypeIcon(item.type)}
@@ -130,9 +144,10 @@ function App() {
                     size="small"
                     color="primary"
                     variant="outlined"
+                    sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
                   />
                 </TableCell>
-                <TableCell align="right">{formatPesos(item.purchaseAmount)}</TableCell>
+                <TableCell align="right" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>{formatPesos(item.purchaseAmount)}</TableCell>
                 <TableCell align="right">
                   <TextField
                     size="small"
@@ -143,17 +158,19 @@ function App() {
                     disabled={item.isSold}
                     InputProps={{
                       startAdornment: <InputAdornment position="start">₱</InputAdornment>,
+                      sx: { fontSize: { xs: '0.75rem', sm: '0.875rem' } }
                     }}
-                    sx={{ width: 150 }}
+                    sx={{ width: { xs: 100, sm: 130 } }}
                   />
                 </TableCell>
                 <TableCell align="center">
                   {item.isSold ? (
                     <Chip 
-                      icon={<CheckCircle />} 
+                      icon={<CheckCircle sx={{ fontSize: { xs: 14, sm: 16 } }} />} 
                       label="Sold" 
                       color="success" 
-                      size="small" 
+                      size="small"
+                      sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
                     />
                   ) : (
                     <Button
@@ -162,9 +179,14 @@ function App() {
                       size="small"
                       onClick={() => markAsSold(item.id)}
                       disabled={!item.soldAmount}
-                      startIcon={<CheckCircle />}
+                      startIcon={<CheckCircle sx={{ fontSize: { xs: 14, sm: 16 } }} />}
+                      sx={{ 
+                        fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                        px: { xs: 1, sm: 2 },
+                        py: { xs: 0.5, sm: 1 }
+                      }}
                     >
-                      Mark Sold
+                      Mark
                     </Button>
                   )}
                 </TableCell>
