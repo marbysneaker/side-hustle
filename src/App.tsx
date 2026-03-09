@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
-import { db } from './firebase';
 import {
   Container,
   Typography,
@@ -67,38 +65,35 @@ function App() {
     { id: '26', name: 'PSU Power Supply', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
   ];
 
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>(() => {
+    const saved = localStorage.getItem('inventory');
+    return saved ? JSON.parse(saved) : initialInventory;
+  });
 
   const totalPurchase = inventory.reduce((sum, item) => sum + item.purchaseAmount, 0);
   const totalSold = inventory.reduce((sum, item) => sum + (item.soldAmount || 0), 0);
   const totalProfit = totalSold - totalPurchase;
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'inventory'), (snapshot) => {
-      const items: InventoryItem[] = [];
-      snapshot.forEach((doc) => {
-        items.push({ id: doc.id, ...doc.data() } as InventoryItem);
-      });
-      setInventory(items);
-    });
-
-    return () => unsubscribe();
-  }, []);
+    localStorage.setItem('inventory', JSON.stringify(inventory));
+  }, [inventory]);
 
   const formatPesos = (amount: number | null) => {
     if (amount === null) return '-';
     return `₱${amount.toLocaleString('en-PH')}`;
   };
 
-  const handleSoldAmountChange = async (id: string, value: string) => {
+  const handleSoldAmountChange = (id: string, value: string) => {
     const numValue = value === '' ? null : parseFloat(value);
-    const itemRef = doc(db, 'inventory', id);
-    await updateDoc(itemRef, { soldAmount: numValue });
+    setInventory(inventory.map(item => 
+      item.id === id ? { ...item, soldAmount: numValue } : item
+    ));
   };
 
-  const markAsSold = async (id: string) => {
-    const itemRef = doc(db, 'inventory', id);
-    await updateDoc(itemRef, { isSold: true });
+  const markAsSold = (id: string) => {
+    setInventory(inventory.map(item => 
+      item.id === id ? { ...item, isSold: true } : item
+    ));
   };
 
   const getTypeIcon = (type: string) => {
