@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { collection, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { db } from './firebase';
 import {
   Container,
   Typography,
@@ -35,64 +37,38 @@ interface InventoryItem {
 }
 
 function App() {
-  const initialInventory: InventoryItem[] = [
-    { id: '1', name: 'Nike SB Janoski Black Size 10', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '2', name: 'Nike SB Janoski Black Size 9', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '3', name: 'Nike SB Janoski Black Size 10', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '4', name: 'Nike SB Janoski Black Size 8', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '5', name: 'Nike SB Janoski White Size 8', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '6', name: 'Nike SB Janoski White Size 9', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '7', name: 'Nike SB Janoski Size 10', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '8', name: 'Nike SB Janoski Size 8.5', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '9', name: 'Nike SB Janoski Size 7.5', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '10', name: 'Nike SB Janoski Maroon Size 8.5', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '11', name: 'Nike SB Black Size 10', type: 'shoes', purchaseAmount: 1140, soldAmount: null, isSold: false },
-    { id: '12', name: 'Adidas Sandals Black Size 9', type: 'sandals', purchaseAmount: 513, soldAmount: null, isSold: false },
-    { id: '13', name: 'Adidas Sandals Black Size 9', type: 'sandals', purchaseAmount: 513, soldAmount: null, isSold: false },
-    { id: '14', name: 'Adidas Sandals Black Size 9', type: 'sandals', purchaseAmount: 513, soldAmount: null, isSold: false },
-    { id: '15', name: 'Adidas Sandals Black Size 9', type: 'sandals', purchaseAmount: 513, soldAmount: null, isSold: false },
-    { id: '16', name: 'Adidas Sandals Black Size 9', type: 'sandals', purchaseAmount: 513, soldAmount: null, isSold: false },
-    { id: '17', name: 'Adidas Sandals Black Size 9', type: 'sandals', purchaseAmount: 513, soldAmount: null, isSold: false },
-    { id: '18', name: 'Adidas Sandals Black Size 9', type: 'sandals', purchaseAmount: 513, soldAmount: null, isSold: false },
-    { id: '19', name: 'Adidas Sandals Black Size 9', type: 'sandals', purchaseAmount: 513, soldAmount: null, isSold: false },
-    { id: '20', name: 'Supreme Kids Tee Navy Size L', type: 'shirts', purchaseAmount: 2850, soldAmount: null, isSold: false },
-    { id: '21', name: 'Supreme Shadow Tee Navy Size L', type: 'shirts', purchaseAmount: 2850, soldAmount: null, isSold: false },
-    { id: '22', name: 'Google Home Mini', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
-    { id: '23', name: 'Google Home Mini', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
-    { id: '24', name: 'Google Home Mini', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
-    { id: '25', name: 'Google Home Mini', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
-    { id: '26', name: 'PSU Power Supply', type: 'electronics', purchaseAmount: 0, soldAmount: null, isSold: false },
-  ];
-
-  const [inventory, setInventory] = useState<InventoryItem[]>(() => {
-    const saved = localStorage.getItem('inventory');
-    return saved ? JSON.parse(saved) : initialInventory;
-  });
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
   const totalPurchase = inventory.reduce((sum, item) => sum + item.purchaseAmount, 0);
   const totalSold = inventory.reduce((sum, item) => sum + (item.soldAmount || 0), 0);
   const totalProfit = totalSold - totalPurchase;
 
   useEffect(() => {
-    localStorage.setItem('inventory', JSON.stringify(inventory));
-  }, [inventory]);
+    const unsubscribe = onSnapshot(collection(db, 'inventory'), (snapshot) => {
+      const items: InventoryItem[] = [];
+      snapshot.forEach((doc) => {
+        items.push({ id: doc.id, ...doc.data() } as InventoryItem);
+      });
+      setInventory(items.sort((a, b) => parseInt(a.id) - parseInt(b.id)));
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const formatPesos = (amount: number | null) => {
     if (amount === null) return '-';
     return `₱${amount.toLocaleString('en-PH')}`;
   };
 
-  const handleSoldAmountChange = (id: string, value: string) => {
+  const handleSoldAmountChange = async (id: string, value: string) => {
     const numValue = value === '' ? null : parseFloat(value);
-    setInventory(inventory.map(item => 
-      item.id === id ? { ...item, soldAmount: numValue } : item
-    ));
+    const itemRef = doc(db, 'inventory', id);
+    await updateDoc(itemRef, { soldAmount: numValue });
   };
 
-  const markAsSold = (id: string) => {
-    setInventory(inventory.map(item => 
-      item.id === id ? { ...item, isSold: true } : item
-    ));
+  const markAsSold = async (id: string) => {
+    const itemRef = doc(db, 'inventory', id);
+    await updateDoc(itemRef, { isSold: true });
   };
 
   const getTypeIcon = (type: string) => {
