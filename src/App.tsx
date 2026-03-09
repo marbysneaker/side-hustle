@@ -13,7 +13,7 @@ import {
   TextField,
   InputAdornment,
   Button,
-  Grid2 as Grid,
+  Grid,
   Card,
   CardContent,
 } from '@mui/material';
@@ -124,7 +124,7 @@ function App() {
       </Typography>
 
       <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 12, sm: 4 }}>
+        <Grid item xs={12} sm={4}>
           <Card elevation={2}>
             <CardContent>
               <Typography variant="body2" color="text.secondary">
@@ -136,7 +136,7 @@ function App() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
+        <Grid item xs={12} sm={4}>
           <Card elevation={2}>
             <CardContent>
               <Typography variant="body2" color="text.secondary">
@@ -148,7 +148,7 @@ function App() {
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
+        <Grid item xs={12} sm={4}>
           <Card elevation={2}>
             <CardContent>
               <Typography variant="body2" color="text.secondary">
