@@ -1,0 +1,42 @@
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.inventory-table thead {
+  background: #4a5568;
+  color: white;
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 1rem;
+  text-align: left;
+}
+
+.inventory-table tbody tr:hover {
+  background: #f7fafc;
+}
+
+.inventory-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.inventory-table tbody tr:last-child {
+  border-bottom: none;
+}
